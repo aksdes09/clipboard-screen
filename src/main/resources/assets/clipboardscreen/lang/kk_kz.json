@@ -1,0 +1,8 @@
+{
+  "clipboardscreen.message.copied": "Скриншот алмасу буферіне көшірілді",
+  "clipboardscreen.message.failed": "Скриншотты алмасу буферіне көшіру мүмкін болмады",
+  "clipboardscreen.config.title": "Clipboard Screen баптаулары",
+  "clipboardscreen.config.copy": "Скриншоттарды көшіру",
+  "clipboardscreen.config.notifications": "Чаттағы хабарландырулар",
+  "modmenu.descriptionTranslation.clipboardscreen": "Скриншоттарды (F2) алмасу буферіне көшіріп, бұл туралы чатта хабарлайды."
+}

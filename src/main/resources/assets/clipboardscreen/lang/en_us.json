@@ -1,0 +1,8 @@
+{
+  "clipboardscreen.message.copied": "Screenshot copied to clipboard",
+  "clipboardscreen.message.failed": "Couldn't copy the screenshot to the clipboard",
+  "clipboardscreen.config.title": "Clipboard Screen Settings",
+  "clipboardscreen.config.copy": "Copy screenshots",
+  "clipboardscreen.config.notifications": "Chat notifications",
+  "modmenu.descriptionTranslation.clipboardscreen": "Copies F2 screenshots to the clipboard and tells you about it in chat."
+}

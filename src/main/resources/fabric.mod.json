@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "clipboardscreen",
+	"version": "${version}",
+	"name": "Clipboard Screen",
+	"description": "Copies F2 screenshots to the clipboard and tells you about it in chat.",
+	"authors": ["aksdes"],
+	"license": "MIT",
+	"icon": "assets/clipboardscreen/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": ["com.aksdes.clipboardscreen.ClipboardScreen"],
+		"modmenu": ["com.aksdes.clipboardscreen.compat.ModMenuIntegration"]
+	},
+	"mixins": [
+		{
+			"config": "clipboardscreen.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25"
+	},
+	"suggests": {
+		"modmenu": "*"
+	}
+}

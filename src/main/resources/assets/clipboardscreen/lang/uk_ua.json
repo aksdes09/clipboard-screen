@@ -1,0 +1,8 @@
+{
+  "clipboardscreen.message.copied": "Знімок екрана скопійовано в буфер обміну",
+  "clipboardscreen.message.failed": "Не вдалося скопіювати знімок екрана в буфер обміну",
+  "clipboardscreen.config.title": "Налаштування Clipboard Screen",
+  "clipboardscreen.config.copy": "Копіювати знімки екрана",
+  "clipboardscreen.config.notifications": "Сповіщення в чаті",
+  "modmenu.descriptionTranslation.clipboardscreen": "Копіює знімки екрана (F2) у буфер обміну та повідомляє про це в чаті."
+}
