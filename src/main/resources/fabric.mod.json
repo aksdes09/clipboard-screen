@@ -5,7 +5,7 @@
 	"name": "Clipboard Screen",
 	"description": "Copies F2 screenshots to the clipboard and tells you about it in chat.",
 	"authors": ["aksdes"],
-	"license": "MIT",
+	"license": "GPL-3.0",
 	"icon": "assets/clipboardscreen/icon.png",
 	"environment": "client",
 	"entrypoints": {
