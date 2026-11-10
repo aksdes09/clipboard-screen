@@ -1,11 +1,11 @@
 name: build
 on: [push, workflow_dispatch]
 
-# One jar for Minecraft 26.1.2, 26.2 and 26.3.
-# 1. Compile the same code against each version (+ check the Screenshot.grab hook there).
-# 2. Compare the compiled classes: identical bytecode = the jar built against 26.3
+# Two jars (Fabric + NeoForge), each for Minecraft 26.1.2, 26.2 and 26.3.
+# 1. Compile both loaders against each Minecraft version (+ check the Screenshot.grab hook there).
+# 2. Per loader, compare the compiled classes: identical bytecode = the jar built against 26.3
 #    calls exactly the same game methods on 26.1.2 and 26.2 too.
-# 3. Publish that jar.
+# 3. Publish both jars (artifact "clipshot").
 
 jobs:
   build:
@@ -21,23 +21,28 @@ jobs:
         with:
           distribution: temurin
           java-version: 25
-      - name: Build
+      - name: Build Fabric + NeoForge
         run: chmod +x gradlew && ./gradlew build -Pminecraft_version=${{ matrix.minecraft }}
       - name: Mixin target report
         if: always()
-        run: cat build/reports/screenshot-hook.txt || true
+        run: |
+          cat fabric/build/reports/screenshot-hook.txt || true
+          echo
+          cat neoforge/build/reports/screenshot-hook.txt || true
       - uses: actions/upload-artifact@v4
         with:
           name: classes-${{ matrix.minecraft }}
-          path: build/classes/java/main
+          path: |
+            fabric/build/classes/java/main
+            neoforge/build/classes/java/main
       - uses: actions/upload-artifact@v4
         if: matrix.minecraft == '26.3'
         with:
-          name: jar-26.3
+          name: jars-26.3
           path: build/libs/*.jar
 
-  universal:
-    name: One jar for all versions
+  publish:
+    name: Fabric + NeoForge jars for all versions
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -52,30 +57,34 @@ jobs:
       - name: Compare bytecode
         working-directory: classes
         run: |
-          base=classes-26.3
           fail=0
-          for dir in classes-*; do
-            [ "$dir" = "$base" ] && continue
-            if diff -r -q "$base" "$dir" > /dev/null; then
-              echo "OK: bytecode compiled against ${dir#classes-} is identical to 26.3"
-            else
-              fail=1
-              echo "::error::Bytecode compiled against ${dir#classes-} differs from 26.3 - one jar is not safe for that version"
-              diff -r -q "$base" "$dir" || true
-              (cd "$base" && find . -name '*.class') | while read -r f; do
-                if ! cmp -s "$base/$f" "$dir/$f"; then
-                  echo "----- $f"
-                  diff <(javap -c -p "$base/$f" 2>&1 | sed -E 's/#[0-9]+//g') <(javap -c -p "$dir/$f" 2>&1 | sed -E 's/#[0-9]+//g') | head -40 || true
-                fi
-              done
-            fi
+          for loader in fabric neoforge; do
+            base="classes-26.3/$loader/build/classes/java/main"
+            for version_dir in classes-*; do
+              [ "$version_dir" = "classes-26.3" ] && continue
+              version="${version_dir#classes-}"
+              other="$version_dir/$loader/build/classes/java/main"
+              if diff -r -q "$base" "$other" > /dev/null; then
+                echo "OK: $loader bytecode compiled against $version is identical to 26.3"
+              else
+                fail=1
+                echo "::error::$loader bytecode compiled against $version differs from 26.3 - one jar is not safe for that version"
+                diff -r -q "$base" "$other" || true
+                (cd "$base" && find . -name '*.class') | while read -r f; do
+                  if ! cmp -s "$base/$f" "$other/$f"; then
+                    echo "----- $loader: $f"
+                    diff <(javap -c -p "$base/$f" 2>&1 | sed -E 's/#[0-9]+//g') <(javap -c -p "$other/$f" 2>&1 | sed -E 's/#[0-9]+//g') | head -40 || true
+                  fi
+                done
+              fi
+            done
           done
           exit $fail
       - uses: actions/download-artifact@v4
         with:
-          name: jar-26.3
-          path: jar
+          name: jars-26.3
+          path: jars
       - uses: actions/upload-artifact@v4
         with:
           name: clipshot
-          path: jar/*.jar
+          path: jars/*.jar

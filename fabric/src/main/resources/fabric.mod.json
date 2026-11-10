@@ -9,8 +9,8 @@
 	"icon": "assets/clipshot/icon.png",
 	"environment": "client",
 	"entrypoints": {
-		"client": ["com.aksdes.clipshot.ClipShot"],
-		"modmenu": ["com.aksdes.clipshot.compat.ModMenuIntegration"]
+		"client": ["com.aksdes.clipshot.fabric.ClipShotFabric"],
+		"modmenu": ["com.aksdes.clipshot.fabric.ModMenuIntegration"]
 	},
 	"mixins": [
 		{

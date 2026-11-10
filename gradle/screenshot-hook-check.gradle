@@ -14,10 +14,16 @@ abstract class VerifyScreenshotHook extends DefaultTask {
 	@OutputFile
 	abstract RegularFileProperty getReport()
 
+	@Input
+	abstract Property<String> getProjectPath()
+
 	@TaskAction
 	void verify() {
+		// Fabric (Loom) puts Minecraft on the classpath as a jar; NeoForge (MDG) as a patched jar.
+		// Directories are supported too, just in case.
 		File mcJar = classpath.files.find { f ->
-			f.isFile() && f.name.endsWith('.jar') && new java.util.zip.ZipFile(f).withCloseable { it.getEntry(OWNER + '.class') != null }
+			(f.isFile() && f.name.endsWith('.jar') && new java.util.zip.ZipFile(f).withCloseable { it.getEntry(OWNER + '.class') != null }) ||
+					(f.isDirectory() && new File(f, OWNER + '.class').isFile())
 		}
 		if (mcJar == null) {
 			throw new GradleException("${OWNER}.class was not found on the compile classpath")
@@ -27,30 +33,25 @@ abstract class VerifyScreenshotHook extends DefaultTask {
 		List<String> targetCallers = []
 		Map<String, List<String>> otherCallers = [:]
 
-		new java.util.zip.ZipFile(mcJar).withCloseable { zip ->
-			zip.entries().each { entry ->
-				if (!entry.name.startsWith('net/minecraft/') || !entry.name.endsWith('.class')) {
-					return
-				}
-				ClassInfo info = zip.getInputStream(entry).withCloseable { parse(new DataInputStream(new BufferedInputStream(it))) }
-				String cls = entry.name.replace('.class', '').replace('/', '.')
+		eachMinecraftClass(mcJar) { String entryName, InputStream stream ->
+			ClassInfo info = parse(new DataInputStream(new BufferedInputStream(stream)))
+			String cls = entryName.replace('.class', '').replace('/', '.')
 
-				if (entry.name == OWNER + '.class') {
-					info.methods.findAll { it[0] == NAME }.each { grabMethods << (it[0] + it[1]) }
-				}
-				info.methodRefs.findAll { it[0] == OWNER && it[1] == NAME }.each { ref ->
-					if (ref[2] == DESC) {
-						if (!targetCallers.contains(cls)) targetCallers << cls
-					} else {
-						otherCallers.computeIfAbsent(NAME + ref[2]) { [] }.with { if (!it.contains(cls)) it << cls }
-					}
+			if (entryName == OWNER + '.class') {
+				info.methods.findAll { it[0] == NAME }.each { grabMethods << (it[0] + it[1]) }
+			}
+			info.methodRefs.findAll { it[0] == OWNER && it[1] == NAME }.each { ref ->
+				if (ref[2] == DESC) {
+					if (!targetCallers.contains(cls)) targetCallers << cls
+				} else {
+					otherCallers.computeIfAbsent(NAME + ref[2]) { [] }.with { if (!it.contains(cls)) it << cls }
 				}
 			}
 		}
 
 		boolean hasTarget = grabMethods.contains(NAME + DESC)
 		StringBuilder text = new StringBuilder()
-		text << "Minecraft jar: ${mcJar.name}\n"
+		text << "Project: ${projectPath.get()}\nMinecraft classes: ${mcJar.name}\n"
 		text << "Screenshot.grab methods:\n"
 		grabMethods.each { text << "  ${it}\n" }
 		text << "Mixin target ${NAME}${DESC}: ${hasTarget ? 'FOUND' : 'MISSING'}\n"
@@ -67,6 +68,27 @@ abstract class VerifyScreenshotHook extends DefaultTask {
 		}
 		if (targetCallers.isEmpty()) {
 			throw new GradleException("ClipShot mixin target exists but nothing calls it (F2 would not be caught), see ${out}")
+		}
+	}
+
+	/** Calls action(entryName, stream) for every net/minecraft class in a jar or a classes directory. */
+	static void eachMinecraftClass(File root, Closure action) {
+		if (root.isDirectory()) {
+			File base = new File(root, 'net/minecraft')
+			base.eachFileRecurse(groovy.io.FileType.FILES) { File f ->
+				if (f.name.endsWith('.class')) {
+					String entryName = root.toPath().relativize(f.toPath()).toString().replace(File.separatorChar, (char) '/')
+					f.withInputStream { action(entryName, it) }
+				}
+			}
+			return
+		}
+		new java.util.zip.ZipFile(root).withCloseable { zip ->
+			zip.entries().each { entry ->
+				if (entry.name.startsWith('net/minecraft/') && entry.name.endsWith('.class')) {
+					zip.getInputStream(entry).withCloseable { action(entry.name, it) }
+				}
+			}
 		}
 	}
 
@@ -141,6 +163,7 @@ def verifyScreenshotHook = tasks.register('verifyScreenshotHook', VerifyScreensh
 	description = 'Checks that the Screenshot.grab mixin target exists and is called in this Minecraft version.'
 	classpath.from(sourceSets.main.compileClasspath)
 	report = layout.buildDirectory.file('reports/screenshot-hook.txt')
+	projectPath = project.path
 }
 
 tasks.named('check') {

@@ -1,0 +1,33 @@
+plugins {
+	id 'net.fabricmc.fabric-loom'
+}
+
+apply from: rootProject.file('gradle/loader-common.gradle')
+
+repositories {
+	maven {
+		name = 'TerraformersMC'
+		url = 'https://maven.terraformersmc.com/releases/'
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${rootProject.mcVersion}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Mod Menu is optional: only used to open the settings screen.
+	compileOnly "com.terraformersmc:modmenu:${rootProject.target.modmenu}"
+}
+
+processResources {
+	def modVersion = project.version.toString()
+	def ranges = rootProject.fabricRanges
+	inputs.property 'version', modVersion
+	inputs.property 'minecraft', ranges
+
+	filesMatching('fabric.mod.json') {
+		expand version: modVersion
+		// "minecraft": "@MINECRAFT@"  ->  "minecraft": ["~26.1.2", "~26.2", "~26.3"]  (any of them)
+		filter { String line -> line.replace('"@MINECRAFT@"', ranges) }
+	}
+}

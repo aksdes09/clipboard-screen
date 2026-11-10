@@ -1,0 +1,31 @@
+// Shared by fabric/ and neoforge/: both compile the loader-independent code in common/
+// together with their own entrypoint, and put their jar into the root build/libs.
+
+def commonDir = rootProject.file('common/src/main')
+sourceSets.main.java.srcDir(new File(commonDir, 'java'))
+sourceSets.main.resources.srcDir(new File(commonDir, 'resources'))
+
+base {
+	archivesName = "clipshot-${project.name}"   // clipshot-fabric / clipshot-neoforge
+}
+
+version = "${project.version}+mc${rootProject.versionLabel}"
+
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.release = 25
+	options.encoding = 'UTF-8'
+}
+
+tasks.named('jar', Jar) {
+	destinationDirectory = rootProject.layout.buildDirectory.dir('libs')
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_clipshot" }
+	}
+}
+
+// Checks in the Minecraft jar that the mixin target exists and is actually called.
+apply from: rootProject.file('gradle/screenshot-hook-check.gradle')

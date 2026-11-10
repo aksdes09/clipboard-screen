@@ -1,0 +1,35 @@
+plugins {
+	id 'java-library'
+	id 'net.neoforged.moddev'
+}
+
+apply from: rootProject.file('gradle/loader-common.gradle')
+
+neoForge {
+	version = rootProject.target.neoforge
+
+	runs {
+		client {
+			client()
+		}
+	}
+
+	mods {
+		clipshot {
+			sourceSet sourceSets.main
+		}
+	}
+}
+
+processResources {
+	def props = [
+		version        : project.version.toString(),
+		minecraft_range: rootProject.minecraftRange,
+		neoforge_range : rootProject.neoforgeRange,
+	]
+	inputs.properties props
+
+	filesMatching('META-INF/neoforge.mods.toml') {
+		expand props
+	}
+}

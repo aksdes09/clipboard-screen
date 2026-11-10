@@ -1,5 +1,6 @@
-package com.aksdes.clipshot.compat;
+package com.aksdes.clipshot.fabric;
 
+import com.aksdes.clipshot.ClipShotConfigScreen;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 

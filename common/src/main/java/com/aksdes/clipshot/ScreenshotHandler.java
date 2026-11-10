@@ -1,6 +1,5 @@
 package com.aksdes.clipshot;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
@@ -58,7 +57,7 @@ public final class ScreenshotHandler {
 	}
 
 	private static File findScreenshot(Component message) {
-		File dir = FabricLoader.getInstance().getGameDir().resolve("screenshots").toFile();
+		File dir = ClipShot.gameDir().resolve("screenshots").toFile();
 
 		// "screenshot.success" has the file name as its first argument.
 		if (message.getContents() instanceof TranslatableContents tc

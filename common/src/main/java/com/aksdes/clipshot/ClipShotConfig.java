@@ -2,7 +2,6 @@ package com.aksdes.clipshot;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,7 +15,9 @@ import java.nio.file.Path;
  */
 public final class ClipShotConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("clipshot.json");
+	private static final String FILE_NAME = "clipshot.json";
+	/** Set by {@link #load(Path)}; the loader decides where the config folder is. */
+	private static Path file = Path.of("config", FILE_NAME);
 
 	private static volatile ClipShotConfig instance = new ClipShotConfig();
 
@@ -29,15 +30,16 @@ public final class ClipShotConfig {
 		return instance;
 	}
 
-	public static void load() {
-		if (Files.exists(FILE)) {
-			try (Reader reader = Files.newBufferedReader(FILE, StandardCharsets.UTF_8)) {
+	public static void load(Path configDir) {
+		file = configDir.resolve(FILE_NAME);
+		if (Files.exists(file)) {
+			try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 				ClipShotConfig loaded = GSON.fromJson(reader, ClipShotConfig.class);
 				if (loaded != null) {
 					instance = loaded;
 				}
 			} catch (Exception e) {
-				ClipShot.LOGGER.warn("Could not read {}, using defaults", FILE, e);
+				ClipShot.LOGGER.warn("Could not read {}, using defaults", file, e);
 			}
 		}
 		save(); // writes defaults / adds new keys
@@ -45,12 +47,12 @@ public final class ClipShotConfig {
 
 	public static void save() {
 		try {
-			Files.createDirectories(FILE.getParent());
-			try (Writer writer = Files.newBufferedWriter(FILE, StandardCharsets.UTF_8)) {
+			Files.createDirectories(file.getParent());
+			try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
 				GSON.toJson(instance, writer);
 			}
 		} catch (IOException e) {
-			ClipShot.LOGGER.warn("Could not save {}", FILE, e);
+			ClipShot.LOGGER.warn("Could not save {}", file, e);
 		}
 	}
 }

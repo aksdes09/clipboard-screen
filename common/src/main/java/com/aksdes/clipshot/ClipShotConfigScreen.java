@@ -1,6 +1,5 @@
-package com.aksdes.clipshot.compat;
+package com.aksdes.clipshot;
 
-import com.aksdes.clipshot.ClipShotConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
