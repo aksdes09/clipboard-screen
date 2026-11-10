@@ -1,26 +1,26 @@
 package com.aksdes.clipshot.compat;
 
-import com.aksdes.clipshot.ClipshotConfig;
+import com.aksdes.clipshot.ClipShotConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-public class ClipshotConfigScreen extends Screen {
+public class ClipShotConfigScreen extends Screen {
 	private static final int BUTTON_WIDTH = 220;
 	private static final int BUTTON_HEIGHT = 20;
 
 	private final Screen parent;
 
-	public ClipshotConfigScreen(Screen parent) {
+	public ClipShotConfigScreen(Screen parent) {
 		super(Component.translatable("clipshot.config.title"));
 		this.parent = parent;
 	}
 
 	@Override
 	protected void init() {
-		ClipshotConfig config = ClipshotConfig.get();
+		ClipShotConfig config = ClipShotConfig.get();
 		int x = this.width / 2 - BUTTON_WIDTH / 2;
 		int y = this.height / 2 - 30;
 
@@ -61,7 +61,7 @@ public class ClipshotConfigScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		ClipshotConfig.save();
+		ClipShotConfig.save();
 		this.minecraft.setScreenAndShow(this.parent);
 	}
 }

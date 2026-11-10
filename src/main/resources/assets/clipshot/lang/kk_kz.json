@@ -1,7 +1,7 @@
 {
   "clipshot.message.copied": "Скриншот алмасу буферіне көшірілді",
   "clipshot.message.failed": "Скриншотты алмасу буферіне көшіру мүмкін болмады",
-  "clipshot.config.title": "Clipshot баптаулары",
+  "clipshot.config.title": "ClipShot баптаулары",
   "clipshot.config.copy": "Скриншоттарды көшіру",
   "clipshot.config.notifications": "Чаттағы хабарландырулар",
   "modmenu.descriptionTranslation.clipshot": "Скриншоттарды (F2) алмасу буферіне көшіріп, бұл туралы чатта хабарлайды."

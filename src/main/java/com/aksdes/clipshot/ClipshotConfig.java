@@ -14,30 +14,30 @@ import java.nio.file.Path;
 /**
  * Settings stored in config/clipshot.json.
  */
-public final class ClipshotConfig {
+public final class ClipShotConfig {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("clipshot.json");
 
-	private static volatile ClipshotConfig instance = new ClipshotConfig();
+	private static volatile ClipShotConfig instance = new ClipShotConfig();
 
 	/** Copy F2 screenshots to the clipboard. */
 	public boolean copyToClipboard = true;
 	/** Show a chat message after the screenshot was copied (or failed to copy). */
 	public boolean showNotifications = true;
 
-	public static ClipshotConfig get() {
+	public static ClipShotConfig get() {
 		return instance;
 	}
 
 	public static void load() {
 		if (Files.exists(FILE)) {
 			try (Reader reader = Files.newBufferedReader(FILE, StandardCharsets.UTF_8)) {
-				ClipshotConfig loaded = GSON.fromJson(reader, ClipshotConfig.class);
+				ClipShotConfig loaded = GSON.fromJson(reader, ClipShotConfig.class);
 				if (loaded != null) {
 					instance = loaded;
 				}
 			} catch (Exception e) {
-				Clipshot.LOGGER.warn("Could not read {}, using defaults", FILE, e);
+				ClipShot.LOGGER.warn("Could not read {}, using defaults", FILE, e);
 			}
 		}
 		save(); // writes defaults / adds new keys
@@ -50,7 +50,7 @@ public final class ClipshotConfig {
 				GSON.toJson(instance, writer);
 			}
 		} catch (IOException e) {
-			Clipshot.LOGGER.warn("Could not save {}", FILE, e);
+			ClipShot.LOGGER.warn("Could not save {}", FILE, e);
 		}
 	}
 }

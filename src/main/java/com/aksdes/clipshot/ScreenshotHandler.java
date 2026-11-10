@@ -19,7 +19,7 @@ public final class ScreenshotHandler {
 	private static final long FALLBACK_MAX_AGE_MS = 30_000;
 
 	private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(runnable -> {
-		Thread thread = new Thread(runnable, "Clipshot");
+		Thread thread = new Thread(runnable, "ClipShot");
 		thread.setDaemon(true);
 		return thread;
 	});
@@ -37,14 +37,14 @@ public final class ScreenshotHandler {
 		return message -> {
 			vanilla.accept(message);
 
-			ClipshotConfig config = ClipshotConfig.get();
+			ClipShotConfig config = ClipShotConfig.get();
 			if (!config.copyToClipboard || isFailure(message)) {
 				return;
 			}
 
 			EXECUTOR.execute(() -> {
 				boolean copied = ClipboardCopier.copy(findScreenshot(message));
-				if (ClipshotConfig.get().showNotifications) {
+				if (ClipShotConfig.get().showNotifications) {
 					vanilla.accept(copied
 							? Component.translatable("clipshot.message.copied").withStyle(ChatFormatting.GREEN)
 							: Component.translatable("clipshot.message.failed").withStyle(ChatFormatting.RED));

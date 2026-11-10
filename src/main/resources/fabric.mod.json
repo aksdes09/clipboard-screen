@@ -2,14 +2,14 @@
 	"schemaVersion": 1,
 	"id": "clipshot",
 	"version": "${version}",
-	"name": "Clipshot",
+	"name": "ClipShot",
 	"description": "Copies F2 screenshots to the clipboard and tells you about it in chat.",
 	"authors": ["aksdes"],
 	"license": "GPL-3.0",
 	"icon": "assets/clipshot/icon.png",
 	"environment": "client",
 	"entrypoints": {
-		"client": ["com.aksdes.clipshot.Clipshot"],
+		"client": ["com.aksdes.clipshot.ClipShot"],
 		"modmenu": ["com.aksdes.clipshot.compat.ModMenuIntegration"]
 	},
 	"mixins": [

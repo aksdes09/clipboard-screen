@@ -4,9 +4,9 @@ import net.fabricmc.api.ClientModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Clipshot implements ClientModInitializer {
+public class ClipShot implements ClientModInitializer {
 	public static final String MOD_ID = "clipshot";
-	public static final Logger LOGGER = LoggerFactory.getLogger("Clipshot");
+	public static final Logger LOGGER = LoggerFactory.getLogger("ClipShot");
 
 	static {
 		// Minecraft keeps AWT headless, which blocks the system clipboard.
@@ -20,9 +20,9 @@ public class Clipshot implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		ClipshotConfig.load();
-		LOGGER.info("Clipshot loaded (copy: {}, notifications: {})",
-				ClipshotConfig.get().copyToClipboard,
-				ClipshotConfig.get().showNotifications);
+		ClipShotConfig.load();
+		LOGGER.info("ClipShot loaded (copy: {}, notifications: {})",
+				ClipShotConfig.get().copyToClipboard,
+				ClipShotConfig.get().showNotifications);
 	}
 }

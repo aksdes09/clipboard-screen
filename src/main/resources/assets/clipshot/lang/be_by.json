@@ -1,7 +1,7 @@
 {
   "clipshot.message.copied": "Здымак экрана скапіяваны ў буфер абмену",
   "clipshot.message.failed": "Не ўдалося скапіяваць здымак экрана ў буфер абмену",
-  "clipshot.config.title": "Налады Clipshot",
+  "clipshot.config.title": "Налады ClipShot",
   "clipshot.config.copy": "Капіяваць здымкі экрана",
   "clipshot.config.notifications": "Апавяшчэнні ў чаце",
   "modmenu.descriptionTranslation.clipshot": "Капіюе здымкі экрана (F2) у буфер абмену і паведамляе пра гэта ў чаце."

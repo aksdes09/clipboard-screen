@@ -36,7 +36,7 @@ public final class ClipboardCopier {
 	/** @return true if the image ended up in the clipboard */
 	public static boolean copy(File png) {
 		if (png == null || !png.isFile()) {
-			Clipshot.LOGGER.warn("Screenshot file not found: {}", png);
+			ClipShot.LOGGER.warn("Screenshot file not found: {}", png);
 			return false;
 		}
 		try {
@@ -48,7 +48,7 @@ public final class ClipboardCopier {
 				return copyLinux(png) || copyWithAwt(png);
 			}
 		} catch (Exception e) {
-			Clipshot.LOGGER.error("Failed to copy screenshot to clipboard", e);
+			ClipShot.LOGGER.error("Failed to copy screenshot to clipboard", e);
 			return false;
 		}
 	}
@@ -58,19 +58,19 @@ public final class ClipboardCopier {
 	private static boolean copyWithAwt(File png) {
 		try {
 			if (GraphicsEnvironment.isHeadless()) {
-				Clipshot.LOGGER.debug("AWT is headless, skipping");
+				ClipShot.LOGGER.debug("AWT is headless, skipping");
 				return false;
 			}
 			byte[] bytes = Files.readAllBytes(png.toPath());
 			BufferedImage image = javax.imageio.ImageIO.read(new ByteArrayInputStream(bytes));
 			if (image == null) {
-				Clipshot.LOGGER.warn("Could not decode {}", png);
+				ClipShot.LOGGER.warn("Could not decode {}", png);
 				return false;
 			}
 			Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new PngTransferable(bytes, image), null);
 			return true;
 		} catch (Throwable t) {
-			Clipshot.LOGGER.debug("AWT clipboard failed", t);
+			ClipShot.LOGGER.debug("AWT clipboard failed", t);
 			return false;
 		}
 	}
@@ -173,13 +173,13 @@ public final class ClipboardCopier {
 					return true;
 				}
 			} catch (IOException e) {
-				Clipshot.LOGGER.debug("{} is not available", pb.command().get(0));
+				ClipShot.LOGGER.debug("{} is not available", pb.command().get(0));
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				return false;
 			}
 		}
-		Clipshot.LOGGER.debug("No wl-copy/xclip, trying AWT");
+		ClipShot.LOGGER.debug("No wl-copy/xclip, trying AWT");
 		return false;
 	}
 
@@ -193,12 +193,12 @@ public final class ClipboardCopier {
 		Process process = pb.start();
 		if (!process.waitFor(TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
 			process.destroyForcibly();
-			Clipshot.LOGGER.warn("{} timed out", pb.command().get(0));
+			ClipShot.LOGGER.warn("{} timed out", pb.command().get(0));
 			return false;
 		}
 		int code = process.exitValue();
 		if (code != 0) {
-			Clipshot.LOGGER.warn("{} exited with code {}", pb.command().get(0), code);
+			ClipShot.LOGGER.warn("{} exited with code {}", pb.command().get(0), code);
 		}
 		return code == 0;
 	}
