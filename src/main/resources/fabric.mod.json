@@ -1,20 +1,20 @@
 {
 	"schemaVersion": 1,
-	"id": "clipboardscreen",
+	"id": "clipshot",
 	"version": "${version}",
-	"name": "Clipboard Screen",
+	"name": "Clipshot",
 	"description": "Copies F2 screenshots to the clipboard and tells you about it in chat.",
 	"authors": ["aksdes"],
 	"license": "GPL-3.0",
-	"icon": "assets/clipboardscreen/icon.png",
+	"icon": "assets/clipshot/icon.png",
 	"environment": "client",
 	"entrypoints": {
-		"client": ["com.aksdes.clipboardscreen.ClipboardScreen"],
-		"modmenu": ["com.aksdes.clipboardscreen.compat.ModMenuIntegration"]
+		"client": ["com.aksdes.clipshot.Clipshot"],
+		"modmenu": ["com.aksdes.clipshot.compat.ModMenuIntegration"]
 	},
 	"mixins": [
 		{
-			"config": "clipboardscreen.mixins.json",
+			"config": "clipshot.mixins.json",
 			"environment": "client"
 		}
 	],

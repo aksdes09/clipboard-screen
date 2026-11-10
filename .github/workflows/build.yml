@@ -12,5 +12,5 @@ jobs:
       - run: chmod +x gradlew && ./gradlew build
       - uses: actions/upload-artifact@v4
         with:
-          name: clipboard-screen
+          name: clipshot
           path: build/libs/*.jar

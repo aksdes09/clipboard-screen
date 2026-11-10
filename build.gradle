@@ -3,7 +3,7 @@ plugins {
 }
 
 base {
-	archivesName = 'clipboard-screen'
+	archivesName = 'clipshot'
 }
 
 version = "${project.version}+mc${project.minecraft_version}"

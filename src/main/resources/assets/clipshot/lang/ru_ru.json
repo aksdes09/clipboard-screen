@@ -1,0 +1,8 @@
+{
+  "clipshot.message.copied": "Скриншот скопирован в буфер обмена",
+  "clipshot.message.failed": "Не удалось скопировать скриншот в буфер обмена",
+  "clipshot.config.title": "Настройки Clipshot",
+  "clipshot.config.copy": "Копировать скриншоты",
+  "clipshot.config.notifications": "Уведомления в чате",
+  "modmenu.descriptionTranslation.clipshot": "Копирует скриншоты (F2) в буфер обмена и сообщает об этом в чате."
+}

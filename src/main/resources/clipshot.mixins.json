@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "com.aksdes.clipshot.mixin",
+	"compatibilityLevel": "JAVA_25",
+	"client": [
+		"ScreenshotMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
