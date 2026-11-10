@@ -1,0 +1,148 @@
+// Mixin targets are not checked by the Java compiler: if Mojang renames or stops calling
+// Screenshot.grab(File, RenderTarget, Consumer), the mod would still build but crash or
+// silently do nothing in game. This task reads the Minecraft jar the mod is built against
+// and fails the build in that case. Result: build/reports/screenshot-hook.txt
+
+abstract class VerifyScreenshotHook extends DefaultTask {
+	static final String OWNER = 'net/minecraft/client/Screenshot'
+	static final String NAME = 'grab'
+	static final String DESC = '(Ljava/io/File;Lcom/mojang/blaze3d/pipeline/RenderTarget;Ljava/util/function/Consumer;)V'
+
+	@Classpath
+	abstract ConfigurableFileCollection getClasspath()
+
+	@OutputFile
+	abstract RegularFileProperty getReport()
+
+	@TaskAction
+	void verify() {
+		File mcJar = classpath.files.find { f ->
+			f.isFile() && f.name.endsWith('.jar') && new java.util.zip.ZipFile(f).withCloseable { it.getEntry(OWNER + '.class') != null }
+		}
+		if (mcJar == null) {
+			throw new GradleException("${OWNER}.class was not found on the compile classpath")
+		}
+
+		List<String> grabMethods = []
+		List<String> targetCallers = []
+		Map<String, List<String>> otherCallers = [:]
+
+		new java.util.zip.ZipFile(mcJar).withCloseable { zip ->
+			zip.entries().each { entry ->
+				if (!entry.name.startsWith('net/minecraft/') || !entry.name.endsWith('.class')) {
+					return
+				}
+				ClassInfo info = zip.getInputStream(entry).withCloseable { parse(new DataInputStream(new BufferedInputStream(it))) }
+				String cls = entry.name.replace('.class', '').replace('/', '.')
+
+				if (entry.name == OWNER + '.class') {
+					info.methods.findAll { it[0] == NAME }.each { grabMethods << (it[0] + it[1]) }
+				}
+				info.methodRefs.findAll { it[0] == OWNER && it[1] == NAME }.each { ref ->
+					if (ref[2] == DESC) {
+						if (!targetCallers.contains(cls)) targetCallers << cls
+					} else {
+						otherCallers.computeIfAbsent(NAME + ref[2]) { [] }.with { if (!it.contains(cls)) it << cls }
+					}
+				}
+			}
+		}
+
+		boolean hasTarget = grabMethods.contains(NAME + DESC)
+		StringBuilder text = new StringBuilder()
+		text << "Minecraft jar: ${mcJar.name}\n"
+		text << "Screenshot.grab methods:\n"
+		grabMethods.each { text << "  ${it}\n" }
+		text << "Mixin target ${NAME}${DESC}: ${hasTarget ? 'FOUND' : 'MISSING'}\n"
+		text << "Called from: ${targetCallers.isEmpty() ? '(nowhere)' : targetCallers.join(', ')}\n"
+		otherCallers.each { desc, callers -> text << "Other overload ${desc} called from: ${callers.join(', ')}\n" }
+
+		File out = report.get().asFile
+		out.parentFile.mkdirs()
+		out.text = text.toString()
+		logger.lifecycle(text.toString().trim())
+
+		if (!hasTarget) {
+			throw new GradleException("ClipShot mixin target is missing in this Minecraft version, see ${out}")
+		}
+		if (targetCallers.isEmpty()) {
+			throw new GradleException("ClipShot mixin target exists but nothing calls it (F2 would not be caught), see ${out}")
+		}
+	}
+
+	// ---------------------------------------------------------------- minimal class file reader
+
+	static class ClassInfo {
+		List<List<String>> methods = []    // [name, descriptor]
+		List<List<String>> methodRefs = [] // [owner, name, descriptor]
+	}
+
+	static ClassInfo parse(DataInputStream input) {
+		if (Integer.toUnsignedLong(input.readInt()) != 0xCAFEBABEL) throw new IOException('Not a class file')
+		input.readUnsignedShort()
+		input.readUnsignedShort()
+		int count = input.readUnsignedShort()
+		Object[] utf8 = new Object[count]
+		int[] classNameIdx = new int[count]
+		int[][] refs = new int[count][]      // Methodref / InterfaceMethodref: [classIdx, natIdx]
+		int[][] nats = new int[count][]      // NameAndType: [nameIdx, descIdx]
+
+		for (int i = 1; i < count; i++) {
+			int tag = input.readUnsignedByte()
+			switch (tag) {
+				case 1: utf8[i] = input.readUTF(); break
+				case 3: case 4: input.readInt(); break
+				case 5: case 6: input.readLong(); i++; break
+				case 7: classNameIdx[i] = input.readUnsignedShort(); break
+				case 8: case 16: case 19: case 20: input.readUnsignedShort(); break
+				case 9: input.readUnsignedShort(); input.readUnsignedShort(); break
+				case 10: case 11: refs[i] = [input.readUnsignedShort(), input.readUnsignedShort()] as int[]; break
+				case 12: nats[i] = [input.readUnsignedShort(), input.readUnsignedShort()] as int[]; break
+				case 15: input.readUnsignedByte(); input.readUnsignedShort(); break
+				case 17: case 18: input.readUnsignedShort(); input.readUnsignedShort(); break
+				default: throw new IOException("Unknown constant pool tag ${tag}")
+			}
+		}
+
+		ClassInfo info = new ClassInfo()
+		for (int i = 1; i < count; i++) {
+			if (refs[i] != null) {
+				String owner = utf8[classNameIdx[refs[i][0]]]
+				int[] nat = nats[refs[i][1]]
+				info.methodRefs << [owner, (String) utf8[nat[0]], (String) utf8[nat[1]]]
+			}
+		}
+
+		input.readUnsignedShort() // access
+		input.readUnsignedShort() // this
+		input.readUnsignedShort() // super
+		int interfaces = input.readUnsignedShort()
+		for (int i = 0; i < interfaces; i++) input.readUnsignedShort()
+		[false, true].each { boolean isMethods ->
+			int members = input.readUnsignedShort()
+			for (int i = 0; i < members; i++) {
+				input.readUnsignedShort()
+				int name = input.readUnsignedShort()
+				int desc = input.readUnsignedShort()
+				if (isMethods) info.methods << [(String) utf8[name], (String) utf8[desc]]
+				int attributes = input.readUnsignedShort()
+				for (int a = 0; a < attributes; a++) {
+					input.readUnsignedShort()
+					input.skipNBytes(Integer.toUnsignedLong(input.readInt()))
+				}
+			}
+		}
+		return info
+	}
+}
+
+def verifyScreenshotHook = tasks.register('verifyScreenshotHook', VerifyScreenshotHook) {
+	group = 'verification'
+	description = 'Checks that the Screenshot.grab mixin target exists and is called in this Minecraft version.'
+	classpath.from(sourceSets.main.compileClasspath)
+	report = layout.buildDirectory.file('reports/screenshot-hook.txt')
+}
+
+tasks.named('check') {
+	dependsOn verifyScreenshotHook
+}

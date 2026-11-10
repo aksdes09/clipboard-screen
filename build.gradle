@@ -2,11 +2,29 @@ plugins {
 	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
+// ---------------------------------------------------------------- supported versions
+// ONE jar runs on every version below: Minecraft 26.x is not obfuscated, so the compiled
+// mod refers to the game by real names, and those names are the same in all of them.
+// -Pminecraft_version only picks which version to COMPILE against; CI compiles against
+// each one and checks that the bytecode is identical (see .github/workflows/build.yml).
+def targets = [
+	'26.1.2': [modmenu: '18.0.2',        range: '~26.1.2'],
+	'26.2'  : [modmenu: '20.0.3',        range: '~26.2'],
+	'26.3'  : [modmenu: '21.0.0-beta.1', range: '~26.3'],
+]
+def supportedRanges = groovy.json.JsonOutput.toJson(targets.values()*.range)  // ["~26.1.2","~26.2","~26.3"]
+def versionLabel = "${targets.keySet().first()}-${targets.keySet().last()}"     // 26.1.2-26.3
+def mcVersion = project.minecraft_version.toString()
+def target = targets[mcVersion]
+if (target == null) {
+	throw new GradleException("Minecraft ${mcVersion} is not supported. Supported: ${targets.keySet().join(', ')}")
+}
+
 base {
 	archivesName = 'clipshot'
 }
 
-version = "${project.version}+mc${project.minecraft_version}"
+version = "${project.version}+mc${versionLabel}"
 
 repositories {
 	maven {
@@ -16,19 +34,22 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	minecraft "com.mojang:minecraft:${mcVersion}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Mod Menu is optional: only used to open the settings screen.
-	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	compileOnly "com.terraformersmc:modmenu:${target.modmenu}"
 }
 
 processResources {
-	def version = project.version
-	inputs.property "version", version
+	def modVersion = project.version.toString()
+	inputs.property "version", modVersion
+	inputs.property "minecraft", supportedRanges
 
 	filesMatching("fabric.mod.json") {
-		expand "version": version
+		expand version: modVersion
+		// "minecraft": "@MINECRAFT@"  ->  "minecraft": ["~26.1.2", "~26.2", "~26.3"]  (any of them)
+		filter { String line -> line.replace('"@MINECRAFT@"', supportedRanges) }
 	}
 }
 
@@ -41,3 +62,6 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_25
 	targetCompatibility = JavaVersion.VERSION_25
 }
+
+// Checks in the Minecraft jar that the mixin target exists and is actually called (see the file).
+apply from: 'gradle/screenshot-hook-check.gradle'
