@@ -1,8 +1,0 @@
-{
-  "clipboardscreen.message.copied": "Captura de pantalla copiada al portapapeles",
-  "clipboardscreen.message.failed": "No se pudo copiar la captura al portapapeles",
-  "clipboardscreen.config.title": "Ajustes de Clipboard Screen",
-  "clipboardscreen.config.copy": "Copiar capturas",
-  "clipboardscreen.config.notifications": "Avisos en el chat",
-  "modmenu.descriptionTranslation.clipboardscreen": "Copia las capturas de pantalla (F2) al portapapeles y avisa en el chat."
-}

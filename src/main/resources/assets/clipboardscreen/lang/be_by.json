@@ -1,8 +1,0 @@
-{
-  "clipboardscreen.message.copied": "Здымак экрана скапіяваны ў буфер абмену",
-  "clipboardscreen.message.failed": "Не ўдалося скапіяваць здымак экрана ў буфер абмену",
-  "clipboardscreen.config.title": "Налады Clipboard Screen",
-  "clipboardscreen.config.copy": "Капіяваць здымкі экрана",
-  "clipboardscreen.config.notifications": "Апавяшчэнні ў чаце",
-  "modmenu.descriptionTranslation.clipboardscreen": "Капіюе здымкі экрана (F2) у буфер абмену і паведамляе пра гэта ў чаце."
-}
