@@ -3,7 +3,7 @@
 	"id": "clipshot",
 	"version": "${version}",
 	"name": "ClipShot",
-	"description": "Copies F2 screenshots to the clipboard and tells you about it in chat.",
+	"description": "A lightweight mod that copies F2 screenshots to the clipboard and notifies you of this in chat.",
 	"authors": ["aksdes"],
 	"license": "GPL-3.0",
 	"icon": "assets/clipshot/icon.png",
